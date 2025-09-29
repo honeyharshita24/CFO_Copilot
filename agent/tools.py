@@ -84,8 +84,12 @@ def gross_margin_pct_trend(fin: FinanceData, months: List[str]) -> pd.DataFrame:
         a.pivot_table(index="month", columns="account_category", values="usd", aggfunc="sum")
         .fillna(0.0)
     )
-    rev = pt.get("Revenue", 0.0)
-    cogs = pt.get("COGS", 0.0)
+    rev = pt.get("Revenue", pd.Series(0.0, index=months))
+    cogs = pt.get("COGS", pd.Series(0.0, index=months))
+    if isinstance(rev, float):
+        rev = pd.Series(rev, index=months)
+    if isinstance(cogs, float):
+        cogs = pd.Series(cogs, index=months)
     gm_pct = (rev - cogs) / rev.replace(0, np.nan)
     out = pd.DataFrame({"month": gm_pct.index, "gm_pct": gm_pct.values})
     out = out.sort_values("month")
@@ -102,13 +106,18 @@ def opex_breakdown_usd(fin: FinanceData, month: str) -> pd.DataFrame:
 
 def ebitda_by_month(fin: FinanceData) -> pd.DataFrame:
     a = to_usd(fin.actuals, fin.fx)
+    if a.empty:
+        return pd.DataFrame(columns=["month", "EBITDA", "Opex_total", "Revenue", "COGS"])
+        
     pt = (
         a.pivot_table(index="month", columns="account_category", values="usd", aggfunc="sum")
         .fillna(0.0)
     )
     opex_cols = [c for c in pt.columns if str(c).startswith("Opex:")]
-    pt["Opex_total"] = pt[opex_cols].sum(axis=1)
-    pt["EBITDA"] = pt.get("Revenue", 0.0) - pt.get("COGS", 0.0) - pt["Opex_total"]
+    pt["Opex_total"] = pt[opex_cols].sum(axis=1) if opex_cols else 0.0
+    pt["Revenue"] = pt.get("Revenue", 0.0)
+    pt["COGS"] = pt.get("COGS", 0.0)
+    pt["EBITDA"] = pt["Revenue"] - pt["COGS"] - pt["Opex_total"]
     pt = pt[["EBITDA", "Opex_total", "Revenue", "COGS"]].reset_index()
     pt = pt.sort_values("month")
     return pt
