@@ -117,7 +117,8 @@ Show Gross Margin % trend for the last 3 months.
 Break down Opex by category for June 2025.
 What is our cash runway right now?
         """)
-    export_pdf = st.button("Export PDF (2 pages)")
+    if 'show_download' not in st.session_state:
+        st.session_state['show_download'] = False
 
     fin = FinanceData.from_dir('fixtures')
 
@@ -127,17 +128,22 @@ What is our cash runway right now?
     if 'last_answer_img' not in st.session_state:
         st.session_state['last_answer_img'] = None
 
-    if export_pdf:
-        # Pass the most recent answer (if any) into the PDF generator so the
-        # exported file reflects the current question/answer.
-        path = generate_pdf(
-            fin,
-            out_path="export.pdf",
-            answer_text=st.session_state.get('last_answer_text'),
-            answer_img_bytes=st.session_state.get('last_answer_img'),
-        )
-        with open(path, "rb") as f:
-            st.download_button("Download export.pdf", data=f, file_name="export.pdf", mime="application/pdf")
+    if not st.session_state['show_download']:
+        if st.button("Export PDF (2 pages)"):
+            # Generate PDF and set state to show download button
+            path = generate_pdf(
+                fin,
+                out_path="export.pdf",
+                answer_text=st.session_state.get('last_answer_text'),
+                answer_img_bytes=st.session_state.get('last_answer_img'),
+            )
+            st.session_state['show_download'] = True
+            st.rerun()
+    else:
+        with open("export.pdf", "rb") as f:
+            if st.download_button("Download export.pdf", data=f, file_name="export.pdf", mime="application/pdf"):
+                st.session_state['show_download'] = False
+                st.rerun()
 
     q = st.text_input("Ask a question", value="What was June 2025 revenue vs budget in USD?")
     ask = st.button("Ask" , type="primary")
