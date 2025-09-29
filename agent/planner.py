@@ -42,35 +42,7 @@ def generate_pdf(fin: FinanceData, out_path: str = "export.pdf", answer_text: st
     c = canvas.Canvas(out_path, pagesize=LETTER)
     width, height = LETTER
 
-    # Page 1: Revenue vs Budget + Opex breakdown
-    # c.setFont("Helvetica-Bold", 16)
-    # c.drawString(40, height-40, "CFO Copilot — Snapshot")
-    # c.setFont("Helvetica", 10)
-    # c.drawString(40, height-60, f"As of {latest}")
-
-    # # Revenue block
-    # c.setFont("Helvetica-Bold", 12)
-    # c.drawString(40, height-90, "Revenue vs Budget")
-    # c.setFont("Helvetica", 10)
-    # c.drawString(40, height-105, f"Actual: ${rvb['actual_usd']:,.0f} | Budget: ${rvb['budget_usd']:,.0f} | Var: ${rvb['variance_usd']:,.0f} ({rvb['variance_pct']*100:.1f}%)")
-    # c.drawImage(ImageReader(img1), 40, height-500, width=220, preserveAspectRatio=True, mask='auto')
-
-    # # Opex block
-    # c.setFont("Helvetica-Bold", 12)
-    # c.drawString(400, height-90, "Opex Breakdown")
-    # c.drawImage(ImageReader(img2), 320, height-500, width=220, preserveAspectRatio=True, mask='auto')
-
-    # c.showPage()
-
-    # # Page 2: Cash trend
-    # c.setFont("Helvetica-Bold", 16)
-    # c.drawString(40, height-40, "Cash Trend")
-    # c.drawImage(ImageReader(img3), 40, 320, width=540, preserveAspectRatio=True, mask='auto')
-
-    # Optional Page 3: include latest Q&A (text + optional chart) so exported
-    # PDF reflects the current output the user sees in the app.
     if answer_text or answer_img_bytes:
-        # c.showPage()
         c.setFont("Helvetica-Bold", 16)
         c.drawString(40, height-40, "Latest Q&A")
         c.setFont("Helvetica", 10)
